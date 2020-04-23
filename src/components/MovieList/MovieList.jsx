@@ -1,17 +1,17 @@
 import React from 'react';
-import MovieItem from '../MovieItem/MovieItem';
-import Loader from '../Loader/Loader';
+import { MovieItem } from '../MovieItem/MovieItem';
 
-const MovieList = ({
+export const MovieList = ({
   movies,
-  isLoading,
-  removeMovie,
-  addMovieWillWatch,
-  removeMovieWillWatch,
+  movieRemoved,
+  movieAddedToWillWatch,
+  movieRemovedToWillWatch,
 }) => {
-  if (isLoading) {
-    return <Loader />;
-  }
+  const onMovieAddedToWillWatch = (id) => (_evt) => movieAddedToWillWatch(id);
+
+  const onMovieRemovedToWillWatch = (id) => (_evt) => movieRemovedToWillWatch(id);
+
+  const onMovieRemoved = (id) => (_evt) => movieRemoved(id);
 
   return (
     <div className='row mt-4'>
@@ -20,9 +20,9 @@ const MovieList = ({
           <div className='col-6 mb-4' key={movie.id}>
             <MovieItem
               movie={movie}
-              removeMovie={() => removeMovie(movie.id)}
-              addMovieWillWatch={() => addMovieWillWatch(movie)}
-              removeMovieWillWatch={() => removeMovieWillWatch(movie.id)}
+              removeMovie={onMovieRemoved(movie.id)}
+              onMovieAddedToWillWatch={onMovieAddedToWillWatch(movie.id)}
+              onMovieRemovedToWillWatch={onMovieRemovedToWillWatch(movie.id)}
             />
           </div>
         );
@@ -30,5 +30,3 @@ const MovieList = ({
     </div>
   );
 };
-
-export default MovieList;
