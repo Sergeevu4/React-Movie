@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
 import { API_URL, API_KEY_3 } from '../../utils/api';
-import MovieItem from '../MovieItem/MovieItem';
+
 import MovieTabs from '../MovieTabs/MovieTabs';
 import Pagination from '../Pagination/Pagination';
+import MovieList from '../MovieList/MovieList';
+import MovieWillWatch from '../MovieWillWatch/MovieWillWatch.jsx';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default class App extends Component {
   state = {
+    isLoading: false,
     movies: [],
-    moviesWillWatch: [],
+    movieWillWatch: [],
     sort_by: 'popularity.desc',
     page: 1,
     total_pages: null,
@@ -21,12 +24,13 @@ export default class App extends Component {
 
   componentDidUpdate(_, prevState) {
     if (prevState.sort_by !== this.state.sort_by || prevState.page !== this.state.page) {
-      console.log(prevState.page !== this.state.page);
       this.fetchData();
     }
   }
 
   fetchData() {
+    this.setState({ isLoading: true });
+
     fetch(
       `${API_URL}/discover/movie?api_key=${API_KEY_3}&sort_by=${this.state.sort_by}&page=${this.state.page}`
     )
@@ -35,9 +39,12 @@ export default class App extends Component {
         this.setState({
           movies: data.results,
           total_pages: data.total_pages,
+          isLoading: false,
         });
       })
-      .catch((e) => console.error(e));
+      .catch((e) => {
+        this.setState({ isLoading: false });
+      });
   }
 
   removeMovie = (id) => {
@@ -48,13 +55,13 @@ export default class App extends Component {
 
   addMovieWillWatch = (movie) => {
     this.setState((state) => ({
-      moviesWillWatch: [...state.moviesWillWatch, movie],
+      movieWillWatch: [...state.movieWillWatch, movie],
     }));
   };
 
   removeMovieWillWatch = (id) => {
     this.setState((state) => ({
-      moviesWillWatch: state.moviesWillWatch.filter((movie) => movie.id !== id),
+      movieWillWatch: state.movieWillWatch.filter((movie) => movie.id !== id),
     }));
   };
 
@@ -65,16 +72,22 @@ export default class App extends Component {
   };
 
   // Handler - изменения страницы
-  onPaginate = (pageNumber) => this.setState({ page: pageNumber });
+  onPaginateNumber = (pageNumber) => this.setState({ page: pageNumber });
 
   onPaginateNext = () =>
-    this.setState((state) => ({ page: Math.min(state.page + 1, state.total_pages) }));
+    this.setState((state) => ({
+      page: Math.min(state.page + 1, state.total_pages),
+    }));
 
   onPaginatePrev = () =>
     this.setState((state) => ({ page: Math.max(state.page - 1, 1) }));
 
+  onPaginateFirst = () => this.setState({ page: 1 });
+
+  onPaginateLast = () => this.setState({ page: this.state.total_pages });
+
   render() {
-    const { movies, moviesWillWatch, sort_by, total_pages, page } = this.state;
+    const { isLoading, movies, movieWillWatch, sort_by, total_pages, page } = this.state;
 
     return (
       <div className='container-md'>
@@ -82,44 +95,26 @@ export default class App extends Component {
           <div className='col-9'>
             <MovieTabs sort_by={sort_by} sortByMovieTabs={this.sortByMovieTabs} />
 
-            <div className='row mt-4'>
-              {movies &&
-                movies.map((movie) => {
-                  return (
-                    <div className='col-6 mb-4' key={movie.id}>
-                      <MovieItem
-                        movie={movie}
-                        removeMovie={() => this.removeMovie(movie.id)}
-                        addMovieWillWatch={() => this.addMovieWillWatch(movie)}
-                        removeMovieWillWatch={() => this.removeMovieWillWatch(movie.id)}
-                      />
-                    </div>
-                  );
-                })}
-            </div>
+            <MovieList
+              movies={movies}
+              isLoading={isLoading}
+              removeMovie={this.removeMovie}
+              addMovieWillWatch={this.addMovieWillWatch}
+              removeMovieWillWatch={this.removeMovieWillWatch}
+            />
 
             <Pagination
-              page={page}
-              totalPage={total_pages}
-              onPaginate={this.onPaginate}
+              currentPage={page}
+              totalPages={total_pages}
+              onPaginateNumber={this.onPaginateNumber}
               onPaginateNext={this.onPaginateNext}
               onPaginatePrev={this.onPaginatePrev}
+              onPaginateFirst={this.onPaginateFirst}
+              onPaginateLast={this.onPaginateLast}
             />
           </div>
 
-          <div className='col-3'>
-            <h4>Will Watch: {moviesWillWatch.length} movies</h4>
-            <ul className='list-group'>
-              {moviesWillWatch.map((movie) => (
-                <li key={movie.id} className='list-group-item mb-4'>
-                  <div className='d-flex justify-content-between'>
-                    <p>{movie.title}</p>
-                    <p>{movie.vote_average}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <MovieWillWatch movieWillWatch={movieWillWatch} />
         </div>
       </div>
     );
