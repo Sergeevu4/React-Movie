@@ -1,71 +1,43 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Button from '../Button/Button';
 
-export default class MovieItem extends Component {
-  state = {
-    willWatch: false,
-  };
+export const MovieItem = ({
+  movie,
+  removeMovie,
+  onMovieAddedToWillWatch,
+  onMovieRemovedToWillWatch,
+}) => {
+  const toggleButton = movie.willWatch ? (
+    <Button className='btn-danger' onClick={onMovieRemovedToWillWatch}>
+      Remove Will Watch
+    </Button>
+  ) : (
+    <Button className='btn-success' onClick={onMovieAddedToWillWatch}>
+      Add Will Watch
+    </Button>
+  );
 
-  shouldComponentUpdate(nexProps, nextState) {
-    if (
-      nexProps.movie !== this.props.movie ||
-      nextState.willWatch !== this.state.willWatch
-    ) {
-      return true;
-    }
-    return false;
-  }
+  return (
+    <div className='card'>
+      <img
+        className='card-img-top'
+        src={`https://image.tmdb.org/t/p/w500${movie.backdrop_path || movie.poster_path}`}
+        alt={movie.title}
+      />
 
-  onToggleWatch = () => {
-    this.setState(
-      (state) => ({
-        willWatch: !state.willWatch,
-      }),
-      () => {
-        if (this.state.willWatch) {
-          this.props.addMovieWillWatch();
-        } else {
-          this.props.removeMovieWillWatch();
-        }
-      }
-    );
-  };
+      <div className='card-body'>
+        <h6 className='card-title'>{movie.title}</h6>
 
-  render() {
-    const { movie, removeMovie } = this.props;
+        <div className='d-flex justify-content-between align-items-start mb-4'>
+          <p className='mb-0'>Rating: {movie.vote_average}</p>
 
-    const toggleWillWatch = this.state.willWatch ? (
-      <Button className='btn-danger' onClick={this.onToggleWatch}>
-        Remove Will Watch
-      </Button>
-    ) : (
-      <Button className='btn-success' onClick={this.onToggleWatch}>
-        Add Will Watch
-      </Button>
-    );
-
-    return (
-      <div className='card'>
-        <img
-          className='card-img-top'
-          src={`https://image.tmdb.org/t/p/w500${
-            movie.backdrop_path || movie.poster_path
-          }`}
-          alt={movie.title}
-        />
-
-        <div className='card-body'>
-          <h6 className='card-title'>{movie.title}</h6>
-
-          <div className='d-flex justify-content-between align-items-start mb-4'>
-            <p className='mb-0'>Rating: {movie.vote_average}</p>
-
-            {toggleWillWatch}
-          </div>
-
-          <button onClick={removeMovie}>Delete Movie</button>
+          {toggleButton}
         </div>
+
+        <Button className='btn-secondary' onClick={removeMovie}>
+          Delete Movie
+        </Button>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
