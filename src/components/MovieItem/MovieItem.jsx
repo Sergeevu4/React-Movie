@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../Button/Button';
+import imgNotFound from '../../img/imgNotFound.png';
 
 export const MovieItem = ({
   movie,
@@ -17,13 +18,12 @@ export const MovieItem = ({
     </Button>
   );
 
+  const imgPath = movie.backdrop_path || movie.poster_path;
+  const img = imgPath ? `https://image.tmdb.org/t/p/w500${imgPath}` : imgNotFound;
+
   return (
     <div className='card'>
-      <img
-        className='card-img-top'
-        src={`https://image.tmdb.org/t/p/w500${movie.backdrop_path || movie.poster_path}`}
-        alt={movie.title}
-      />
+      <img className='card-img-top' src={img} alt={movie.title} />
 
       <div className='card-body'>
         <h6 className='card-title'>{movie.title}</h6>
