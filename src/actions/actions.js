@@ -2,13 +2,18 @@ import {
   FETCH_MOVIES_REQUEST,
   FETCH_MOVIES_SUCCESS,
   FETCH_MOVIES_FAILURE,
-  FETCH_CHANGE_SORT_MOVIES,
-  SET_CURRENT_PAGE,
+  FETCH_CHANGE_SORT_TYPE_BY_MOVIES,
   REMOVE_MOVIE,
+  TOGGLE_PROPERTY_WILL_WATCH_MOVIE,
+  RESET_PROPERTY_WILL_WATCH_MOVIE,
+  SET_CURRENT_PAGE,
   ADD_MOVIE_WILL_WATCH,
   REMOVE_MOVIE_WILL_WATCH,
   REMOVE_ALL_MOVIE_WILL_WATCH,
+  SET_TOTAL_PAGES,
 } from './actionTypes';
+
+import { togglePropertyWillWatch, checkPropertyWillWatch } from './actionsUtils';
 
 // Класс сервис
 import { MovieService } from '../services/MovieService';
@@ -19,9 +24,9 @@ const moviesRequested = () => ({
 });
 
 // Успешная загрузка, запись полученных данных в массив
-const moviesLoaded = (data) => ({
+const moviesLoaded = (movies) => ({
   type: FETCH_MOVIES_SUCCESS,
-  payload: data,
+  payload: movies,
 });
 
 // Ошибка при загрузке
@@ -30,63 +35,136 @@ const moviesError = (error) => ({
   payload: error,
 });
 
-// Метод серверной сортировки
-const moviesChangeSort = (sortType) => ({
-  type: FETCH_CHANGE_SORT_MOVIES,
-  payload: sortType,
-});
-
-// Удаления фильма из перечня
+// Удаления фильма из каталога всех фильмов
 const movieRemoved = (movieId) => ({
   type: REMOVE_MOVIE,
   payload: movieId,
 });
 
-// Добавления в список фильмов для просмотра
-const movieAddedToWillWatch = (movieId) => ({
-  type: ADD_MOVIE_WILL_WATCH,
-  payload: movieId,
+// Переключения свойства у фильма в каталоге всех фильмов
+const movieToggleProperty = (movies) => ({
+  type: TOGGLE_PROPERTY_WILL_WATCH_MOVIE,
+  payload: movies,
 });
+
+// Сброс всех свойств в каталоге фильмов
+const moviesResetProperty = () => ({
+  type: RESET_PROPERTY_WILL_WATCH_MOVIE,
+});
+
+// ! THUNK
+// Данные находятся в независимых Reducer при этом, они остаются взаимосвязанными
+// для того, чтобы работать с ними одновременно и обновлять в них актуальную информацию
+// используются Thunk - так через них можно получить весь Redux state
+
+// Переключения страниц
+const setCurrentPage = (currentPage) => (dispatch, getState) => {
+  const {
+    pageInfo: { page },
+  } = getState();
+
+  // Если выбранная страница точна та же, что и в state ~ выход
+  if (currentPage === page) {
+    return;
+  }
+
+  dispatch({
+    type: SET_CURRENT_PAGE,
+    payload: currentPage,
+  });
+};
+
+// Установка количества всех страниц с сервера, необходима для пагинации
+const setTotalPages = (total) => (dispatch, getState) => {
+  const {
+    pageInfo: { totalPages },
+  } = getState();
+
+  if (total === totalPages) {
+    return;
+  }
+
+  dispatch({
+    type: SET_TOTAL_PAGES,
+    payload: total,
+  });
+};
+
+// Метод серверной сортировки
+const moviesChangeSort = (sortType) => ({
+  type: FETCH_CHANGE_SORT_TYPE_BY_MOVIES,
+  payload: sortType,
+});
+
+// Добавления в список фильмов для просмотра
+const movieAddedToWillWatch = (movie) => (dispatch) => {
+  // willWatch true
+  const updateMovie = togglePropertyWillWatch(movie);
+
+  // Обновление списка фильмов, с переключенным состоянием willWatch
+  dispatch(movieToggleProperty(updateMovie));
+
+  dispatch({
+    type: ADD_MOVIE_WILL_WATCH,
+    payload: updateMovie,
+  });
+};
 
 // Удаление из списка фильмов для просмотра
-const movieRemovedToWillWatch = (movieId) => ({
-  type: REMOVE_MOVIE_WILL_WATCH,
-  payload: movieId,
-});
+const movieRemovedToWillWatch = (movie) => (dispatch) => {
+  // willWatch false
+  const updateMovie = togglePropertyWillWatch(movie);
+
+  // Обновление списка фильмов, с переключенным состоянием willWatch
+  dispatch(movieToggleProperty(updateMovie));
+
+  dispatch({
+    type: REMOVE_MOVIE_WILL_WATCH,
+    payload: movie,
+  });
+};
 
 // Удаление всех фильмов для просмотра
-const allMoviesAddedToWillWatch = () => ({
-  type: REMOVE_ALL_MOVIE_WILL_WATCH,
-});
+const allMoviesDeletedToWillWatch = () => (dispatch) => {
+  //
+  dispatch(moviesResetProperty());
 
-const setCurrentPage = (page) => ({
-  type: SET_CURRENT_PAGE,
-  payload: page,
-});
+  dispatch({
+    type: REMOVE_ALL_MOVIE_WILL_WATCH,
+  });
+};
 
 // Класс Сервис
 const movieService = new MovieService();
 
 // Получения асинхронных данных через Thunk
 const getMovies = () => (dispatch, getState) => {
-  // КАКОЙ СПОСОБ ПРАВИЛЬНЫЙ?
-  // Данные из Redux store
-  const { sortTypeByMovies, page } = getState();
+  const {
+    sortType: { sortTypeByMovies },
+    pageInfo: { page },
+    movieWillWatchList: { movieWillWatch },
+  } = getState();
 
-  // КАКОЙ СПОСОБ ПРАВИЛЬНЫЙ?
-  // fetchMoviesData(sortTypeByMovies, page)(dispatch);
-  dispatch(fetchMovies(sortTypeByMovies, page));
+  dispatch(fetchMovies(sortTypeByMovies, page, movieWillWatch));
 };
 
 // Загрузка данных
-const fetchMovies = (sortTypeByMovies, page) => async (dispatch) => {
+const fetchMovies = (sortTypeByMovies, page, movieWillWatch) => async (dispatch) => {
   try {
     // Загрузки, обнуление первоначального состояния и активация Spinner
     dispatch(moviesRequested());
-    // Получения всех данных с Сервера
-    const data = await movieService.getResource(sortTypeByMovies, page);
+
+    // Получения данных с Сервера
+    const { movies, totalPages } = await movieService.getResource(sortTypeByMovies, page);
+
+    // При загрузке страницы активируется свойство willWatch у тех фильмов которые
+    // находятся в списке для просмотра
+    const verifiedMovies = checkPropertyWillWatch(movies, movieWillWatch);
+
     // Отправка загруженных данных в Reducer
-    dispatch(moviesLoaded(data));
+    dispatch(moviesLoaded(verifiedMovies));
+
+    dispatch(setTotalPages(totalPages));
   } catch (error) {
     dispatch(moviesError(error));
   }
@@ -95,64 +173,9 @@ const fetchMovies = (sortTypeByMovies, page) => async (dispatch) => {
 export {
   getMovies,
   moviesChangeSort,
+  setCurrentPage,
+  movieRemoved,
   movieAddedToWillWatch,
   movieRemovedToWillWatch,
-  allMoviesAddedToWillWatch,
-  movieRemoved,
-  setCurrentPage,
+  allMoviesDeletedToWillWatch,
 };
-
-/*
-	const fetchMovies = (sortType = 'default', page = 1) => async (
-	dispatch,
-	getState
-) => {
-	try {
-		// Данные из Redux store
-		const { sortTypeByMovies, page } = getState();
-
-		// Предотвращает повторный запрос при вызове с одинаковым типом сортировки
-		if (sortType === sortTypeByMovies && sortTypeByMovies !== 'default') {
-			return;
-		}
-
-		// Менялся ли тип сортировки
-		if (sortType !== 'default') {
-			dispatch(moviesChangeSort(sortType));
-		}
-
-		// Загрузки, обнуление первоначальное состояния и активация Spinner
-		dispatch(moviesRequsted());
-
-		// Получения всех данных с Сервера
-		const data = await movieService.getResource(sortType, page);
-		console.log(data);
-
-		// Отправка загруженных данных в Reducer
-		dispatch(moviesLoaded(data));
-	} catch (error) {
-		dispatch(moviesError(error));
-	}
-};
-
-// Загрузка данных
-const fetchMovies = (currentSortType = 'default', currentPape = 1) => async (
-	dispatch
-) => {
-	try {
-		// Первая ли загрузка ?
-		if (currentSortType !== 'default') {
-			dispatch(moviesChangeSort(currentSortType));
-		}
-
-		// Загрузки, обнуление первоначального состояния и активация Spinner
-		dispatch(moviesRequsted());
-		// Получения всех данных с Сервера
-		const data = await movieService.getResource(currentSortType, currentPape);
-		// Отправка загруженных данных в Reducer
-		dispatch(moviesLoaded(data));
-	} catch (error) {
-		dispatch(moviesError(error));
-	}
-};
-*/
