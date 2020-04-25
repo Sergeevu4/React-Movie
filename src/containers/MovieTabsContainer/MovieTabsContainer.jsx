@@ -31,7 +31,7 @@ class MovieTabsContainer extends Component {
   }
 }
 
-const mapStateToProps = ({ sortTypeByMovies }) => ({
+const mapStateToProps = ({ sortType: { sortTypeByMovies } }) => ({
   sortTypeByMovies,
 });
 

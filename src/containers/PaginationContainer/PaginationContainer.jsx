@@ -6,7 +6,6 @@ import { Pagination } from '../../components';
 
 class PaginationContainer extends Component {
   maxPages = 10;
-  // this.pageNumbers = getPaginationNumbers(currentPage, totalPages, this.maxPages);
 
   setFirstPage = () => {
     const firstPage = 1;
@@ -54,11 +53,16 @@ class PaginationContainer extends Component {
   }
 }
 
-const mapStateToProps = ({ sortTypeByMovies, page, totalPages }) => ({
-  page,
-  totalPages,
-  sortTypeByMovies,
-});
+const mapStateToProps = ({ pageInfo, sortType }) => {
+  const { page, totalPages } = pageInfo;
+  const { sortTypeByMovies } = sortType;
+
+  return {
+    page,
+    totalPages,
+    sortTypeByMovies,
+  };
+};
 
 const mapDispatchToProps = {
   getMovies,
