@@ -20,6 +20,24 @@ const initialState = {
   totalPages: 0,
 };
 
+const state = {
+  movieList: {
+    movies: [],
+    loading: false,
+    error: null,
+  },
+  page: {
+    currentPage: 1,
+    totalPages: 0,
+  },
+  sortTypeByMovies: {
+    sortType: 'popularity',
+  },
+  movieWillWatchList: {
+    moviesWillWatch: [],
+  },
+};
+
 // Удаления фильма из перечня
 const removeMovie = (movies, movieId) => movies.filter((movie) => movie.id !== movieId);
 
