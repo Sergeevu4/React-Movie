@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import classNames from 'classnames';
 
-export const MovieTabs = memo(({ tabs, sortTypeByMovies, changeSortType }) => {
+const MovieTabs = ({ tabs, sortTypeByMovies, changeSortType }) => {
   const handleClick = (sortType) => (_evt) => changeSortType(sortType);
 
   const getClassActive = (sortType) =>
@@ -18,4 +18,6 @@ export const MovieTabs = memo(({ tabs, sortTypeByMovies, changeSortType }) => {
       ))}
     </ul>
   );
-});
+};
+
+export default memo(MovieTabs);

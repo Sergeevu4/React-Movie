@@ -7,9 +7,9 @@ export const MovieList = ({
   movieAddedToWillWatch,
   movieRemovedToWillWatch,
 }) => {
-  const onMovieAddedToWillWatch = (id) => (_evt) => movieAddedToWillWatch(id);
+  const onMovieAddedToWillWatch = (movie) => (_evt) => movieAddedToWillWatch(movie);
 
-  const onMovieRemovedToWillWatch = (id) => (_evt) => movieRemovedToWillWatch(id);
+  const onMovieRemovedToWillWatch = (movie) => (_evt) => movieRemovedToWillWatch(movie);
 
   const onMovieRemoved = (id) => (_evt) => movieRemoved(id);
 
@@ -21,8 +21,8 @@ export const MovieList = ({
             <MovieItem
               movie={movie}
               removeMovie={onMovieRemoved(movie.id)}
-              onMovieAddedToWillWatch={onMovieAddedToWillWatch(movie.id)}
-              onMovieRemovedToWillWatch={onMovieRemovedToWillWatch(movie.id)}
+              onMovieAddedToWillWatch={onMovieAddedToWillWatch(movie)}
+              onMovieRemovedToWillWatch={onMovieRemovedToWillWatch(movie)}
             />
           </div>
         );

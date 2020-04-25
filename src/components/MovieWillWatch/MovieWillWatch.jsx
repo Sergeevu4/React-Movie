@@ -4,12 +4,12 @@ import Button from '../Button/Button';
 export const MovieWillWatch = ({
   movieWillWatch,
   movieRemovedToWillWatch,
-  allMoviesAddedToWillWatch,
+  allMoviesDeletedToWillWatch,
 }) => {
-  const onMovieRemovedToWillWatch = (id) => (_evt) => movieRemovedToWillWatch(id);
+  const onMovieRemovedToWillWatch = (movie) => (_evt) => movieRemovedToWillWatch(movie);
 
   const resetButton = movieWillWatch.length ? (
-    <Button className='btn-info mb-2' onClick={allMoviesAddedToWillWatch}>
+    <Button className='btn-info mb-2' onClick={allMoviesDeletedToWillWatch}>
       Reset
     </Button>
   ) : null;
@@ -28,7 +28,7 @@ export const MovieWillWatch = ({
               <p>{movie.vote_average}</p>
             </div>
 
-            <Button className='btn-danger' onClick={onMovieRemovedToWillWatch(movie.id)}>
+            <Button className='btn-danger' onClick={onMovieRemovedToWillWatch(movie)}>
               Deleted
             </Button>
           </li>
