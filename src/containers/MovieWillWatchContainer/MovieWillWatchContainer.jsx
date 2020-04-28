@@ -22,8 +22,7 @@ class MovieWillWatchContainer extends Component {
     );
   }
 }
-// * Чтение данных из Redux Store
-// state - который определен в Reducer
+
 const mapStateToProps = ({ movieWillWatchList: { movieWillWatch } }) => ({
   movieWillWatch,
 });

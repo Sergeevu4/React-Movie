@@ -62,9 +62,7 @@ class MovieListContainer extends Component {
     );
   }
 }
-// * Чтение данных из Redux Store
-// state - который определен в Reducer
-// const mapStateToProps = ({ movies, loading, error, sortTypeByMovies, page }) => {
+
 const mapStateToProps = ({ movieList, pageInfo, sortType }) => {
   const { movies, loading, error } = movieList;
   const { page } = pageInfo;

@@ -126,7 +126,6 @@ const movieRemovedToWillWatch = (movie) => (dispatch) => {
 
 // Удаление всех фильмов для просмотра
 const allMoviesDeletedToWillWatch = () => (dispatch) => {
-  //
   dispatch(moviesResetProperty());
 
   dispatch({

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getMovies, setCurrentPage } from '../../actions';
+import { setCurrentPage } from '../../actions';
 import { getPaginationNumbers } from './getPaginationNumbers';
 import { Pagination } from '../../components';
 
@@ -65,7 +65,6 @@ const mapStateToProps = ({ pageInfo, sortType }) => {
 };
 
 const mapDispatchToProps = {
-  getMovies,
   setCurrentPage,
 };
 
