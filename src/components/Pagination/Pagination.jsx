@@ -3,17 +3,22 @@ import classNames from 'classnames';
 
 export const Pagination = ({
   pageNumbers,
-  page,
+  currentPage,
   totalPages,
-  setFirstPage,
-  setLastPage,
-  setNextPage,
-  setPrevPage,
-  setNumbersPage,
+  setPage,
+  // setFirstPage,
+  // setLastPage,
+  // setNextPage,
+  // setPrevPage,
+  // setNumbersPage,
 }) => {
-  const handelClick = (fn, ...args) => (evt) => {
+  // const handelClick = (fn, ...args) => (evt) => {
+  //   evt.preventDefault();
+  //   fn(...args);
+  // };
+  const handelClick = (pageName, pageNumber) => (evt) => {
     evt.preventDefault();
-    fn(...args);
+    setPage(pageName, pageNumber);
   };
 
   // Функция для активации класса выбранной страницы
@@ -25,24 +30,24 @@ export const Pagination = ({
   return (
     <nav>
       <ul className='pagination d-flex justify-content-center'>
-        <li className={getClass(1, page, 'disabled')}>
-          <a href='!#' className='page-link' onClick={handelClick(setFirstPage)}>
+        <li className={getClass(1, currentPage, 'disabled')}>
+          <a href='!#' className='page-link' onClick={handelClick('FIRST_PAGE')}>
             First
           </a>
         </li>
 
-        <li className={getClass(1, page, 'disabled')}>
-          <a href='!#' className='page-link' onClick={handelClick(setPrevPage)}>
+        <li className={getClass(1, currentPage, 'disabled')}>
+          <a href='!#' className='page-link' onClick={handelClick('PREV_PAGE')}>
             <span aria-hidden='true'>&laquo;</span>
           </a>
         </li>
 
         {pageNumbers.map((pageNumber) => (
-          <li key={pageNumber} className={getClass(pageNumber, page, 'active')}>
+          <li key={pageNumber} className={getClass(pageNumber, currentPage, 'active')}>
             <a
               href='!#'
               className='page-link'
-              onClick={handelClick(setNumbersPage, pageNumber)}
+              onClick={handelClick('NUMBER_PAGE', pageNumber)}
             >
               {pageNumber}
             </a>
@@ -50,14 +55,14 @@ export const Pagination = ({
         ))}
 
         {/* // Отключить если последняя стараница */}
-        <li className={getClass(totalPages, page, 'disabled')}>
-          <a href='!#' className='page-link' onClick={handelClick(setNextPage)}>
+        <li className={getClass(totalPages, currentPage, 'disabled')}>
+          <a href='!#' className='page-link' onClick={handelClick('NEXT_PAGE')}>
             <span aria-hidden='true'>&raquo;</span>
           </a>
         </li>
 
-        <li className={getClass(totalPages, page, 'disabled')}>
-          <a href='!#' className='page-link' onClick={handelClick(setLastPage)}>
+        <li className={getClass(totalPages, currentPage, 'disabled')}>
+          <a href='!#' className='page-link' onClick={handelClick('LAST_PAGE')}>
             Last
           </a>
         </li>

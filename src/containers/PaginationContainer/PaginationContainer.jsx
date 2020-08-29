@@ -3,69 +3,82 @@ import { connect } from 'react-redux';
 import { setCurrentPage } from '../../actions';
 import { getPaginationNumbers } from './getPaginationNumbers';
 import { Pagination } from '../../components';
+import { withRouter } from 'react-router-dom';
 
 class PaginationContainer extends Component {
   maxPages = 10;
 
-  setFirstPage = () => {
+  setUrlPage(page) {
+    const { history } = this.props;
+    history.push(`${page}`);
+  }
+
+  setPage = (namePage, pageNumber) => {
+    const { match, totalPages } = this.props;
+    const currentPage = Number(match.params.currentPage);
     const firstPage = 1;
-    this.props.setCurrentPage(firstPage);
-  };
 
-  setLastPage = () => {
-    const { totalPages, setCurrentPage } = this.props;
-    setCurrentPage(totalPages);
-  };
+    // Если выбранная и уже установленная страница совпадают
+    if (currentPage === pageNumber) {
+      return;
+    }
 
-  setNextPage = () => {
-    const { setCurrentPage, page, totalPages } = this.props;
-    const nextPage = Math.min(page + 1, totalPages);
-    setCurrentPage(nextPage);
-  };
+    switch (namePage) {
+      case 'FIRST_PAGE':
+        this.setUrlPage(firstPage);
+        break;
 
-  setPrevPage = () => {
-    const { page, setCurrentPage } = this.props;
-    const firstPage = 1;
-    const prevPage = Math.max(page - 1, firstPage);
-    setCurrentPage(prevPage);
-  };
+      case 'LAST_PAGE':
+        this.setUrlPage(totalPages);
+        break;
 
-  setNumbersPage = (currentPage) => {
-    this.props.setCurrentPage(currentPage);
+      case 'NEXT_PAGE':
+        this.setUrlPage(Math.min(currentPage + 1, totalPages));
+        break;
+
+      case 'PREV_PAGE':
+        this.setUrlPage(Math.max(currentPage - 1, firstPage));
+        break;
+
+      case 'NUMBER_PAGE':
+        this.setUrlPage(pageNumber);
+        break;
+
+      default:
+        // this.setUrlPage(currentPage);
+        break;
+    }
   };
 
   render() {
-    const { page, totalPages } = this.props;
-    const pageNumbers = getPaginationNumbers(page, totalPages, this.maxPages);
+    const { match, totalPages } = this.props;
+    const currentPage = Number(match.params.currentPage);
+
+    const pageNumbers = getPaginationNumbers(currentPage, totalPages, this.maxPages);
+
+    // console.log(currentPage);
 
     return (
       <Pagination
         pageNumbers={pageNumbers}
-        page={page}
+        setPage={this.setPage}
+        currentPage={currentPage}
         totalPages={totalPages}
-        setFirstPage={this.setFirstPage}
-        setLastPage={this.setLastPage}
-        setNextPage={this.setNextPage}
-        setPrevPage={this.setPrevPage}
-        setNumbersPage={this.setNumbersPage}
       />
     );
   }
 }
 
-const mapStateToProps = ({ pageInfo, sortType }) => {
-  const { page, totalPages } = pageInfo;
-  const { sortTypeByMovies } = sortType;
+const mapStateToProps = ({ pageInfo }) => {
+  const { totalPages } = pageInfo;
 
   return {
-    page,
     totalPages,
-    sortTypeByMovies,
   };
 };
 
-const mapDispatchToProps = {
-  setCurrentPage,
-};
+// const mapDispatchToProps = {
+//   setCurrentPage,
+// };
 
-export default connect(mapStateToProps, mapDispatchToProps)(PaginationContainer);
+export default withRouter(connect(mapStateToProps, null)(PaginationContainer));

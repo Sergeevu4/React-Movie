@@ -6,11 +6,14 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { App } from './components/App/App';
 import { Spinner } from './components';
+import { HashRouter as Router } from 'react-router-dom';
 
 ReactDOM.render(
   <Provider store={store}>
     <PersistGate loading={<Spinner />} persistor={persistor}>
-      <App />
+      <Router>
+        <App />
+      </Router>
     </PersistGate>
   </Provider>,
   document.getElementById('root')

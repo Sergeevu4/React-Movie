@@ -9,6 +9,8 @@ import {
   movieRemovedToWillWatch,
 } from '../../actions';
 
+import { withRouter } from 'react-router-dom';
+
 // # Компонент Контейнер - отвечает за Логику, но не за отображения
 class MovieListContainer extends Component {
   componentDidMount() {
@@ -16,17 +18,22 @@ class MovieListContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (
-      prevProps.sortTypeByMovies !== this.props.sortTypeByMovies ||
-      prevProps.page !== this.props.page
-    ) {
+    if (prevProps.match !== this.props.match) {
       this.updateMovies();
     }
   }
 
   updateMovies() {
+    // Выбранная страницы полученная через url React Router
+    const { currentPage } = this.props;
+
+    // Если в url после page/ - или 0 пустое значение
+    if (!currentPage) {
+      return;
+    }
+
     // Можно передать любые параметры в Thunk через компонент во время вызова
-    this.props.getMovies();
+    this.props.getMovies(currentPage);
   }
 
   render() {
@@ -34,6 +41,7 @@ class MovieListContainer extends Component {
     // # 4) После обновления state, через dispatch action,
     // загружаются данные и обновляется компонент с этими данными
     const {
+      currentPage,
       movies,
       loading,
       error,
@@ -42,15 +50,17 @@ class MovieListContainer extends Component {
       movieRemoved,
     } = this.props;
 
+    if (!currentPage) {
+      return <Error>Please, current page</Error>;
+    }
+
     if (loading) {
       return <Spinner />;
     }
 
     if (error) {
-      return <Error />;
+      return <Error>Error</Error>;
     }
-
-    // console.log(addMovieWillWatch);
 
     return (
       <MovieList
@@ -63,16 +73,19 @@ class MovieListContainer extends Component {
   }
 }
 
-const mapStateToProps = ({ movieList, pageInfo, sortType }) => {
+const mapStateToProps = ({ movieList, sortType }, { match: { params } }) => {
+  // REDUX STATE
   const { movies, loading, error } = movieList;
-  const { page } = pageInfo;
   const { sortTypeByMovies } = sortType;
 
+  // ROUTER - ownProps
+  const currentPage = parseInt(params.currentPage, 10);
+
   return {
+    currentPage,
     movies,
     loading,
     error,
-    page,
     sortTypeByMovies,
   };
 };
@@ -84,4 +97,6 @@ const mapDispatchToProps = {
   movieRemovedToWillWatch,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(MovieListContainer);
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(MovieListContainer)
+);

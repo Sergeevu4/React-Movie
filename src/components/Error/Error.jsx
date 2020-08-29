@@ -1,7 +1,7 @@
 import React from 'react';
 
-export const Error = () => (
+export const Error = ({ children }) => (
   <div className='alert alert-warning' role='alert'>
-    Error
+    {children}
   </div>
 );

@@ -137,24 +137,28 @@ const allMoviesDeletedToWillWatch = () => (dispatch) => {
 const movieService = new MovieService();
 
 // Получения асинхронных данных через Thunk
-const getMovies = () => (dispatch, getState) => {
+const getMovies = (currentPage) => (dispatch, getState) => {
   const {
     sortType: { sortTypeByMovies },
-    pageInfo: { page },
     movieWillWatchList: { movieWillWatch },
   } = getState();
 
-  dispatch(fetchMovies(sortTypeByMovies, page, movieWillWatch));
+  dispatch(fetchMovies(sortTypeByMovies, currentPage, movieWillWatch));
 };
 
 // Загрузка данных
-const fetchMovies = (sortTypeByMovies, page, movieWillWatch) => async (dispatch) => {
+const fetchMovies = (sortTypeByMovies, currentPage, movieWillWatch) => async (
+  dispatch
+) => {
   try {
     // Загрузки, обнуление первоначального состояния и активация Spinner
     dispatch(moviesRequested());
 
     // Получения данных с Сервера
-    const { movies, totalPages } = await movieService.getResource(sortTypeByMovies, page);
+    const { movies, totalPages } = await movieService.getResource(
+      sortTypeByMovies,
+      currentPage
+    );
 
     // При загрузке страницы активируется свойство willWatch у тех фильмов которые
     // находятся в списке для просмотра

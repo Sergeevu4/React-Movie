@@ -6,6 +6,18 @@ import { MovieWillWatch } from '../../components';
 
 // # Компонент Контейнер - отвечает за Логику, но не за отображения
 class MovieWillWatchContainer extends Component {
+  state = {
+    showMenu: true,
+  };
+
+  toggleShowMenuWillWatch = () => {
+    if (!this.props.movieWillWatch.length) {
+      return;
+    }
+
+    this.setState((state) => ({ showMenu: !state.showMenu }));
+  };
+
   render() {
     const {
       movieWillWatch,
@@ -15,6 +27,8 @@ class MovieWillWatchContainer extends Component {
 
     return (
       <MovieWillWatch
+        showMenu={this.state.showMenu}
+        toggleShowMenuWillWatch={this.toggleShowMenuWillWatch}
         movieWillWatch={movieWillWatch}
         movieRemovedToWillWatch={movieRemovedToWillWatch}
         allMoviesDeletedToWillWatch={allMoviesDeletedToWillWatch}
